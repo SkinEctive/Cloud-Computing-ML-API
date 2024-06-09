@@ -1,0 +1,3 @@
+-- GET THE MACCHINE LEARNING MODEL HERE --
+
+https://storage.googleapis.com/skinective/model96.h5

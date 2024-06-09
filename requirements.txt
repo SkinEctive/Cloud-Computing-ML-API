@@ -1,0 +1,12 @@
+Flask==3.0.3
+google-cloud-storage==2.16.0
+keras==2.15.0
+Keras-Preprocessing==1.1.2
+mysql-connector-python==8.4.0
+numpy==1.25.2
+Pillow==9.4.0
+PyJWT==2.8.0
+python-dotenv==1.0.1
+tensorflow==2.15.0
+tensorflow-hub==0.16.1
+nanoid==2.0.0
