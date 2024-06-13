@@ -23,14 +23,14 @@ client = storage.Client.from_service_account_json(serviceKeyPath)
 
 # Define the labels
 labels = [
-    'BA-cellulitis',
-    'BA-impetigo',
-    'FU-athlete-foot',
-    'FU-nail-fungus',
-    'FU-ringworm',
-    'PA-cutaneous-larva-migrans',
-    'VI-chickenpox',
-    'VI-shingles'
+    "Cellulitis",
+    "Impetigo",
+    "Athlete Foot",
+    "Nail Fungus",
+    "Ringworm",
+    "Cutaneous Larva Migrans",
+    "Chickenpox",
+    "Shingles"
 ]
 
 # Fungsi untuk menghubungkan ke database MySQL
@@ -105,10 +105,10 @@ def detect(userId):
         cursor = conn.cursor()
 
         cursor.execute(
-            "SELECT diseaseId FROM Disease WHERE diseaseName = %s", (predicted_label,))
-        diseaseIdResult = cursor.fetchone()
+            "SELECT diseaseId, diseaseName, diseaseDescription, diseaseAction FROM Disease WHERE diseaseName = %s", (predicted_label,))
+        diseaseResult = cursor.fetchone()
 
-        if not diseaseIdResult:
+        if not diseaseResult:
             response = jsonify(
                 {
                     "status": False,
@@ -118,7 +118,7 @@ def detect(userId):
             response.status_code = 404  # HTTP 404 Not Found
             return response
 
-        disease_id = diseaseIdResult[0]
+        disease_id, disease_name, disease_action, disease_description = diseaseResult
 
         # Insert detection history into DetectHistory table
         cursor.execute(
@@ -136,7 +136,9 @@ def detect(userId):
                 "message": "Disease Detected",
                 "data": {
                     "detectHistoryId": detectHistoryId,
-                    "predictedLabel": predicted_label,
+                    "diseaseName": disease_name,
+                    "diseaseAction": disease_action,
+                    "diseaseDescription": disease_description,
                 }
             }
         )
@@ -213,7 +215,10 @@ def getDetectHistoryById(userId):
 
         # Now check if the userId has any detection history
         cursor.execute(
-            "SELECT * FROM DetectHistory WHERE userId = %s", (userId,))
+            """SELECT dh.detectHistoryId, dh.userId, dh.diseaseId, dh.historyImgUrl, dh.createdAt, d.diseaseName, d.diseaseAction, d.diseaseDescription
+               FROM DetectHistory dh
+               JOIN Disease d ON dh.diseaseId = d.diseaseId
+               WHERE dh.userId = %s""", (userId,))
         history_records = cursor.fetchall()
 
         cursor.close()
@@ -233,8 +238,10 @@ def getDetectHistoryById(userId):
                 'userId': record[1],
                 'diseaseId': record[2],
                 'historyImgUrl': record[3],
-                # Format datetime as string
-                'createdAt': record[4].strftime('%Y-%m-%d %H:%M:%S')
+                'createdAt': record[4].strftime('%Y-%m-%d %H:%M:%S'),
+                'diseaseName': record[5],
+                'diseaseAction': record[6],
+                'diseaseDescription': record[7]
             })
 
         return jsonify({
