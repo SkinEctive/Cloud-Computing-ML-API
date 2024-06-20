@@ -46,6 +46,8 @@ def get_mysql_connection():
 
 
 def preprocess_image(image):
+    if image.mode != 'RGB':
+        image = image.convert('RGB')
     image = image.resize((224, 224))
     image = img_to_array(image)
     image = image / 255.0
